@@ -3,13 +3,12 @@ package com.hang.stackask.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,6 +34,8 @@ public class User extends CommonEntity {
 
     @NotBlank(message = "Password is mandatory")
     private String password;
+
+    @Builder.Default
     private Boolean enabled = true;
 
     @Column(name = "reset_password_token")
