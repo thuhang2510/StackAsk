@@ -53,7 +53,7 @@ public class UserRepoTest {
         assertEquals(userData.getEmail(), newUser.getEmail());
         assertEquals(userData.getPhoneNumber(), newUser.getPhoneNumber());
         assertEquals(userData.getUserName(), newUser.getUserName());
-        assertEquals(userData.getEnabled(), newUser.getEnabled());
+        assertTrue(newUser.getEnabled());
         assertNull(newUser.getAvatar());
         assertNull(newUser.getResetPasswordToken());
     }
