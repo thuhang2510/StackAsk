@@ -70,4 +70,10 @@ class UserRepoTest {
         userData.setEmail("");
         assertThrows(ConstraintViolationException.class, () -> userRepo.save(userData));
     }
+
+    @Test
+    void givenInvalidPassword_whenSaveUser_thenThrowsException(){
+        userData.setPassword("");
+        assertThrows(ConstraintViolationException.class, () -> userRepo.save(userData));
+    }
 }
