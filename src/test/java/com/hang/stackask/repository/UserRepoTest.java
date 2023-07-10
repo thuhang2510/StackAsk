@@ -1,6 +1,7 @@
 package com.hang.stackask.repository;
 
 import com.hang.stackask.entity.User;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +57,11 @@ public class UserRepoTest {
         assertTrue(newUser.getEnabled());
         assertNull(newUser.getAvatar());
         assertNull(newUser.getResetPasswordToken());
+    }
+
+    @Test
+    public void givenInvalidUserName_whenSaveUser_thenThrowsException(){
+        userData.setUserName("");
+        assertThrows(ConstraintViolationException.class, () -> userRepo.save(userData));
     }
 }
