@@ -14,14 +14,14 @@ import static org.junit.Assert.*;
 
 @AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
-public class UserRepoTest {
+class UserRepoTest {
     @Autowired
     private UserRepository userRepo;
 
     private User userData;
 
     @BeforeEach
-    public void setDataUser(){
+    void setDataUser(){
         userData = User.builder()
                 .userName("hang12")
                 .fullName("thuhang")
@@ -46,7 +46,7 @@ public class UserRepoTest {
     }
 
     @Test
-    public void givenValidInput_thenCreateUserSuccess() {
+    void givenValidInput_thenCreateUserSuccess() {
         User newUser = userRepo.save(userData);
 
         assertEquals(userData.getUserName(), newUser.getUserName());
@@ -60,8 +60,14 @@ public class UserRepoTest {
     }
 
     @Test
-    public void givenInvalidUserName_whenSaveUser_thenThrowsException(){
+    void givenInvalidUserName_whenSaveUser_thenThrowsException(){
         userData.setUserName("");
+        assertThrows(ConstraintViolationException.class, () -> userRepo.save(userData));
+    }
+
+    @Test
+    void givenInvalidEmail_whenSaveUser_thenThrowsException(){
+        userData.setEmail("");
         assertThrows(ConstraintViolationException.class, () -> userRepo.save(userData));
     }
 }
