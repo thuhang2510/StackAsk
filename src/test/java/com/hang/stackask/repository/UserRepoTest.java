@@ -80,6 +80,16 @@ class UserRepoTest {
     @Test
     void givenEmailExistAndEnabledTrue_whenSaveUser_thenThrowsException(){
         initUser(userData);
+
+        assertThrows(RuntimeException.class, () -> userRepo.save(userData));
+    }
+
+    @Test
+    void givenPhoneDuplicatedAndEnabledTrue_whenSaveUser_thenThrowsException(){
+        initUser(userData);
+
+        userData.setEmail("newEmail@gmail.com");
+
         assertThrows(RuntimeException.class, () -> userRepo.save(userData));
     }
 }
