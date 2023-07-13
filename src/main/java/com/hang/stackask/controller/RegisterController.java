@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,13 +29,13 @@ public class RegisterController {
     private RegisterValidator registerValidator;
 
     @PostMapping("/register")
-    public UserResponse register(@Valid @RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest registerRequest){
         registerValidator.checkPasswordsMatch(registerRequest);
 
         final AddUserData addUserData = modelMapper.map(registerRequest, AddUserData.class);
         final UserData userData = iUserService.create(addUserData);
         final UserResponse userResponse = modelMapper.map(userData, UserResponse.class);
 
-        return userResponse;
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 }
