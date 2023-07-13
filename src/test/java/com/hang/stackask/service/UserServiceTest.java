@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
@@ -42,10 +43,14 @@ public class UserServiceTest {
     @Autowired
     private IUserService iUserService;
 
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
     private AddUserData addUserData;
     private User userEntity;
     private User convertAddUserDataToEntity;
     private UserData userData;
+    private String PASSWORD_ENCODER = "$2a$10$UfxGxMURPZsfEwvaIieSeOZuPoYeDszGYQcCASDNIPpfQJBgtHC0e";
 
     @BeforeEach
     public void init(){
@@ -71,7 +76,7 @@ public class UserServiceTest {
                 .fullName("thuhang")
                 .email("hangdamthu4@gmail.com")
                 .phoneNumber("0389682304")
-                .password("thuhang2001")
+                .password(PASSWORD_ENCODER)
                 .createdTime(LocalDateTime.now())
                 .build();
 
@@ -81,13 +86,14 @@ public class UserServiceTest {
                 .fullName("thuhang")
                 .email("hangdamthu4@gmail.com")
                 .phoneNumber("0389682304")
-                .password("thuhang2001")
+                .password(PASSWORD_ENCODER)
                 .enabled(true)
                 .build();
     }
 
     @Test
     void givenValidAddUserData_whenCreateUser_thenCreateUserSuccess(){
+        given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
         given(userRepository.save(convertAddUserDataToEntity)).willReturn(userEntity);
 
         given(modelMapper.map(addUserData, User.class)).willReturn(convertAddUserDataToEntity);
@@ -100,6 +106,8 @@ public class UserServiceTest {
 
     @Test
     void givenMethodSaveThrowsException_whenCreateUser_thenThrowsException(){
+        given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
+
         given(userRepository.save(convertAddUserDataToEntity)).willThrow(new RuntimeException("Exception"));
         given(modelMapper.map(addUserData, User.class)).willReturn(convertAddUserDataToEntity);
 
@@ -108,6 +116,8 @@ public class UserServiceTest {
 
     @Test
     void givenCanNotMapDataToEntity_whenCreateUser_thenThrowsMappingException(){
+        given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
+
         given(userRepository.save(convertAddUserDataToEntity)).willReturn(userEntity);
         given(modelMapper.map(addUserData, User.class)).willThrow(new MappingException(new ArrayList<>()));
 
@@ -116,6 +126,7 @@ public class UserServiceTest {
 
     @Test
     void givenUserNotSaveInDbAndCanNotMapEntityToData_whenCreateUser_thenThrowsMappingException(){
+        given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
         given(userRepository.save(convertAddUserDataToEntity)).willReturn(null);
 
         given(modelMapper.map(addUserData, User.class)).willReturn(convertAddUserDataToEntity);
