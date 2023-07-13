@@ -1,10 +1,12 @@
 package com.hang.stackask.data;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @Builder
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserData {
     private Long id;
     private String userName;
