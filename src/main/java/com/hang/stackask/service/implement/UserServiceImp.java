@@ -3,6 +3,7 @@ package com.hang.stackask.service.implement;
 import com.hang.stackask.data.AddUserData;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.User;
+import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.interfaces.IUserService;
 import org.modelmapper.ModelMapper;
@@ -33,6 +34,21 @@ public class UserServiceImp implements IUserService {
         userEntity = userRepository.save(userEntity);
 
         UserData userData = modelMapper.map(userEntity, UserData.class);
+        return userData;
+    }
+
+    @Override
+    public UserData getByEmailAndPassword(String email, String password) {
+        User existedBook = userRepository.getUserByEmailAndEnabledIsTrue(email);
+
+        if(existedBook == null)
+            throw new UserNotFoundException("not found user with email: " + email);
+
+        if(!passwordEncoder.matches(password, existedBook.getPassword()))
+            throw new UserNotFoundException("password is wrong: " + password);
+
+        UserData userData = modelMapper.map(existedBook, UserData.class);
+
         return userData;
     }
 }
