@@ -5,4 +5,5 @@ import com.hang.stackask.data.UserData;
 
 public interface IUserService {
     UserData create(AddUserData data);
+    UserData getByEmailAndPassword(String email, String password);
 }
