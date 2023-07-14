@@ -15,14 +15,14 @@ import java.sql.SQLIntegrityConstraintViolationException;
 public class GlobalExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleAllException(Exception e) {
+    @ExceptionHandler({IllegalArgumentException.class, RuntimeException.class})
+    public ResponseEntity<String> handleRequestParamException(Exception e) {
         LOGGER.info("invalid argument: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ResponseEntity<String> handleRequestParamException(SQLIntegrityConstraintViolationException e) {
+    public ResponseEntity<String> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
         LOGGER.info("invalid argument: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid argument");
     }
