@@ -92,4 +92,29 @@ class UserRepoTest {
 
         assertThrows(RuntimeException.class, () -> userRepo.save(userData));
     }
+
+    @Test
+    void givenEmailValid_whenGetUserByEmailAndPasswordAndEnabledTrue_thenGetUserSuccess(){
+        User user = initUser(userData);
+
+        User existUser = userRepo.getUserByEmailAndPasswordAndEnabledIsTrue(user.getEmail(), user.getPassword());
+
+        assertEquals(userData.getUserName(), existUser.getUserName());
+        assertEquals(userData.getFullName(), existUser.getFullName());
+        assertEquals(userData.getEmail(), existUser.getEmail());
+        assertEquals(userData.getPhoneNumber(), existUser.getPhoneNumber());
+        assertEquals(userData.getUserName(), existUser.getUserName());
+        assertTrue(existUser.getEnabled());
+    }
+
+    @Test
+    void givenEmailOrPasswordWrong_whenGetUserByEmailAndPasswordAndEnabledTrue_thenGetUserSuccess(){
+        User user = initUser(userData);
+
+        User existUser = userRepo.getUserByEmailAndPasswordAndEnabledIsTrue("1234", user.getPassword());
+        assertNull(existUser);
+
+        existUser = userRepo.getUserByEmailAndPasswordAndEnabledIsTrue(user.getEmail(), "123");
+        assertNull(existUser);
+    }
 }
