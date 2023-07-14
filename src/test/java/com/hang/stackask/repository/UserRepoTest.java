@@ -94,10 +94,10 @@ class UserRepoTest {
     }
 
     @Test
-    void givenEmailValid_whenGetUserByEmailAndPasswordAndEnabledTrue_thenGetUserSuccess(){
+    void givenEmailCorrect_whenGetUserByEmailAndPasswordAndEnabledTrue_thenGetUserSuccess(){
         User user = initUser(userData);
 
-        User existUser = userRepo.getUserByEmailAndPasswordAndEnabledIsTrue(user.getEmail(), user.getPassword());
+        User existUser = userRepo.getUserByEmailAndEnabledIsTrue(user.getEmail());
 
         assertEquals(userData.getUserName(), existUser.getUserName());
         assertEquals(userData.getFullName(), existUser.getFullName());
@@ -108,13 +108,10 @@ class UserRepoTest {
     }
 
     @Test
-    void givenEmailOrPasswordWrong_whenGetUserByEmailAndPasswordAndEnabledTrue_thenGetUserSuccess(){
-        User user = initUser(userData);
+    void givenEmailWrong_whenGetUserByEmailAndPasswordAndEnabledTrue_thenReturnNull(){
+        initUser(userData);
 
-        User existUser = userRepo.getUserByEmailAndPasswordAndEnabledIsTrue("1234", user.getPassword());
-        assertNull(existUser);
-
-        existUser = userRepo.getUserByEmailAndPasswordAndEnabledIsTrue(user.getEmail(), "123");
+        User existUser = userRepo.getUserByEmailAndEnabledIsTrue("1234");
         assertNull(existUser);
     }
 }
