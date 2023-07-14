@@ -3,6 +3,7 @@ package com.hang.stackask.service;
 import com.hang.stackask.data.AddUserData;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.User;
+import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.implement.UserServiceImp;
 import com.hang.stackask.service.interfaces.IUserService;
@@ -48,7 +49,7 @@ public class UserServiceTest {
 
     private AddUserData addUserData;
     private User userEntity;
-    private User convertAddUserDataToEntity;
+    private User convertDataToEntity;
     private UserData userData;
     private String PASSWORD_ENCODER = "$2a$10$UfxGxMURPZsfEwvaIieSeOZuPoYeDszGYQcCASDNIPpfQJBgtHC0e";
 
@@ -62,7 +63,7 @@ public class UserServiceTest {
                 .password("thuhang2001")
                 .build();
 
-        convertAddUserDataToEntity = User.builder()
+        convertDataToEntity = User.builder()
                 .userName("hang12")
                 .fullName("thuhang")
                 .email("hangdamthu4@gmail.com")
@@ -94,9 +95,9 @@ public class UserServiceTest {
     @Test
     void givenValidAddUserData_whenCreateUser_thenCreateUserSuccess(){
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
-        given(userRepository.save(convertAddUserDataToEntity)).willReturn(userEntity);
+        given(userRepository.save(convertDataToEntity)).willReturn(userEntity);
 
-        given(modelMapper.map(addUserData, User.class)).willReturn(convertAddUserDataToEntity);
+        given(modelMapper.map(addUserData, User.class)).willReturn(convertDataToEntity);
         given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
 
         UserData actualUser = iUserService.create(addUserData);
@@ -108,8 +109,8 @@ public class UserServiceTest {
     void givenMethodSaveThrowsException_whenCreateUser_thenThrowsException(){
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
 
-        given(userRepository.save(convertAddUserDataToEntity)).willThrow(new RuntimeException("Exception"));
-        given(modelMapper.map(addUserData, User.class)).willReturn(convertAddUserDataToEntity);
+        given(userRepository.save(convertDataToEntity)).willThrow(new RuntimeException("Exception"));
+        given(modelMapper.map(addUserData, User.class)).willReturn(convertDataToEntity);
 
         assertThrows(RuntimeException.class, () -> iUserService.create(addUserData));
     }
@@ -118,7 +119,7 @@ public class UserServiceTest {
     void givenCanNotMapDataToEntity_whenCreateUser_thenThrowsMappingException(){
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
 
-        given(userRepository.save(convertAddUserDataToEntity)).willReturn(userEntity);
+        given(userRepository.save(convertDataToEntity)).willReturn(userEntity);
         given(modelMapper.map(addUserData, User.class)).willThrow(new MappingException(new ArrayList<>()));
 
         assertThrows(MappingException.class, () -> iUserService.create(addUserData));
@@ -127,11 +128,73 @@ public class UserServiceTest {
     @Test
     void givenUserNotSaveInDbAndCanNotMapEntityToData_whenCreateUser_thenThrowsMappingException(){
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
-        given(userRepository.save(convertAddUserDataToEntity)).willReturn(null);
+        given(userRepository.save(convertDataToEntity)).willReturn(null);
 
-        given(modelMapper.map(addUserData, User.class)).willReturn(convertAddUserDataToEntity);
+        given(modelMapper.map(addUserData, User.class)).willReturn(convertDataToEntity);
         given(modelMapper.map(null, UserData.class)).willThrow(new MappingException(new ArrayList<>()));
 
         assertThrows(MappingException.class, () -> iUserService.create(addUserData));
+    }
+
+    @Test
+    void givenEmailAndPasswordCorrect_whenGetUserByEmailAndPassword_thenGetUserSuccess(){
+        String email = userData.getEmail();
+        String password = userData.getPassword();
+
+        given(passwordEncoder.matches(password, PASSWORD_ENCODER)).willReturn(true);
+        given(userRepository.getUserByEmailAndEnabledIsTrue(email)).willReturn(userEntity);
+        given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
+
+        UserData actualUser = iUserService.getByEmailAndPassword(email, password);
+        assertSame(userData, actualUser);
+    }
+
+    @Test
+    void givenEmailAndPasswordWrong_whenGetUserByEmailAndPassword_thenThrowsUserNotFoundException(){
+        String email = userData.getEmail();
+        String password = userData.getPassword();
+
+        given(passwordEncoder.matches(password, PASSWORD_ENCODER)).willReturn(true);
+        given(userRepository.getUserByEmailAndEnabledIsTrue(email)).willReturn(null);
+        given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
+
+        assertThrows(UserNotFoundException.class, () -> iUserService.getByEmailAndPassword(email, password));
+    }
+
+    @Test
+    void givenGetInRepositoryThrowsException_whenGetUserByEmailAndPassword_thenThrowsException(){
+        String email = userData.getEmail();
+        String password = userData.getPassword();
+
+        given(passwordEncoder.matches(password, PASSWORD_ENCODER)).willReturn(true);
+        given(userRepository.getUserByEmailAndEnabledIsTrue(email))
+                .willThrow(new RuntimeException("exception"));
+        given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
+
+        assertThrows(RuntimeException.class, () -> iUserService.getByEmailAndPassword(email, password));
+    }
+
+    @Test
+    void givenMappingException_whenGetUserByEmailAndPassword_thenThrowsException(){
+        String email = userData.getEmail();
+        String password = userData.getPassword();
+
+        given(passwordEncoder.matches(password, PASSWORD_ENCODER)).willReturn(true);
+        given(userRepository.getUserByEmailAndEnabledIsTrue(email)).willReturn(userEntity);
+        given(modelMapper.map(userEntity, UserData.class)).willThrow(new MappingException(new ArrayList<>()));
+
+        assertThrows(MappingException.class, () -> iUserService.getByEmailAndPassword(email, password));
+    }
+
+    @Test
+    void givenPasswordIsWrong_whenGetUserByEmailAndPassword_thenThrowsUserNotFoundException(){
+        String email = userData.getEmail();
+        String password = userData.getPassword();
+
+        given(passwordEncoder.matches(password, PASSWORD_ENCODER)).willReturn(false);
+        given(userRepository.getUserByEmailAndEnabledIsTrue(email)).willReturn(userEntity);
+        given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
+
+        assertThrows(UserNotFoundException.class, () -> iUserService.getByEmailAndPassword(email, password));
     }
 }
