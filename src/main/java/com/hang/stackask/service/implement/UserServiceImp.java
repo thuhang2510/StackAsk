@@ -6,11 +6,15 @@ import com.hang.stackask.entity.User;
 import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.interfaces.IUserService;
+import com.hang.stackask.utils.EmailUtil;
+import jakarta.mail.MessagingException;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.internal.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 
 @Component
@@ -24,6 +28,9 @@ public class UserServiceImp implements IUserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailUtil emailUtil;
 
     @Override
     public UserData create(AddUserData data) {
@@ -50,5 +57,24 @@ public class UserServiceImp implements IUserService {
         UserData userData = modelMapper.map(existedBook, UserData.class);
 
         return userData;
+    }
+
+    private User updateResetPassword(String token, String email){
+        User existedUser = userRepository.getUserByEmailAndEnabledIsTrue(email);
+
+        if (existedUser == null)
+            throw new UserNotFoundException("User not exist");
+
+        existedUser.setResetPasswordToken(token);
+        return userRepository.save(existedUser);
+    }
+
+    @Override
+    public String sendMail(String email, String siteURL) throws MessagingException, UnsupportedEncodingException {
+        String token = RandomString.make(55);
+        updateResetPassword(token, email);
+
+        String resetPasswordLink = siteURL + "/reset_password?token=" + token;
+        return emailUtil.sendEmail(email, resetPasswordLink);
     }
 }
