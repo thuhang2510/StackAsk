@@ -7,6 +7,7 @@ import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.implement.UserServiceImp;
 import com.hang.stackask.service.interfaces.IUserService;
+import com.hang.stackask.utils.EmailUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +47,9 @@ public class UserServiceTest {
 
     @MockBean
     private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private EmailUtil emailUtil;
 
     private AddUserData addUserData;
     private User userEntity;
