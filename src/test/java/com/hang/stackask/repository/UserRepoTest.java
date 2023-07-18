@@ -114,4 +114,16 @@ class UserRepoTest {
         User existUser = userRepo.getUserByEmailAndEnabledIsTrue("1234");
         assertNull(existUser);
     }
+
+    @Test
+    void givenExistedUser_whenUpdateResetPassword_thenUpdateSuccess(){
+        User user = initUser(userData);
+        assertNotNull(user);
+
+        user.setResetPasswordToken("new ResetPassword");
+        User updatedUser = userRepo.save(user);
+        assertEquals(user.getEmail(), updatedUser.getEmail());
+        assertEquals(user.getPassword(), updatedUser.getPassword());
+        assertEquals(user.getId(), updatedUser.getId());
+    }
 }
