@@ -10,4 +10,5 @@ public interface IUserService {
     UserData create(AddUserData data);
     UserData getByEmailAndPassword(String email, String password);
     String sendMail(String email, String siteURL) throws MessagingException, UnsupportedEncodingException;
+    String resetPassword(String resetPasswordToken, String nPassword);
 }
