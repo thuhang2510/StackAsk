@@ -3,6 +3,7 @@ package com.hang.stackask.service;
 import com.hang.stackask.data.AddUserData;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.User;
+import com.hang.stackask.exception.FailedToUpdateUserException;
 import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.implement.UserServiceImp;
@@ -23,6 +24,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.BDDMockito.given;
 
@@ -200,5 +202,48 @@ public class UserServiceTest {
         given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
 
         assertThrows(UserNotFoundException.class, () -> iUserService.getByEmailAndPassword(email, password));
+    }
+
+    @Test
+    void givenResetPasswordTokenExist_whenResetPassword_thenUpdateNewPasswordSuccess(){
+        String resetPasswordToken = "6gT1A7vfnbhXuU9PaRfePxEy1NKkE9QSt9Vfw9b7Maiel5mbQ59AMPL";
+        String nPassword = "2324";
+
+        given(userRepository.getUserByResetPasswordTokenAndEnabledIsTrue(resetPasswordToken)).willReturn(userEntity);
+
+        userEntity.setPassword(nPassword);
+        userEntity.setResetPasswordToken(null);
+        given(userRepository.save(userEntity)).willReturn(userEntity);
+
+        String result = iUserService.resetPassword(resetPasswordToken, nPassword);
+        assertEquals("update password success", result);
+    }
+
+    @Test
+    void givenResetPasswordTokenNotExist_whenResetPassword_thenThrowsUserNotFoundException(){
+        String resetPasswordToken = "6gT1A7vfnbhXuU9PaRfePxEy1NKkE9QSt9Vfw9b7Maiel5mbQ59AMPL";
+        String nPassword = "2324";
+
+        given(userRepository.getUserByResetPasswordTokenAndEnabledIsTrue(resetPasswordToken)).willReturn(null);
+
+        userEntity.setPassword(nPassword);
+        userEntity.setResetPasswordToken(null);
+        given(userRepository.save(userEntity)).willReturn(userEntity);
+
+        assertThrows(UserNotFoundException.class, () -> iUserService.resetPassword(resetPasswordToken, nPassword));
+    }
+
+    @Test
+    void givenFailToUpdatePassword_whenResetPassword_thenThrowsFailedToUpdateUserException(){
+        String resetPasswordToken = "6gT1A7vfnbhXuU9PaRfePxEy1NKkE9QSt9Vfw9b7Maiel5mbQ59AMPL";
+        String nPassword = "2324";
+
+        given(userRepository.getUserByResetPasswordTokenAndEnabledIsTrue(resetPasswordToken)).willReturn(userEntity);
+
+        userEntity.setPassword(nPassword);
+        userEntity.setResetPasswordToken(null);
+        given(userRepository.save(userEntity)).willReturn(null);
+
+        assertThrows(FailedToUpdateUserException.class, () -> iUserService.resetPassword(resetPasswordToken, nPassword));
     }
 }
