@@ -39,6 +39,7 @@ class UserRepoTest {
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .password(user.getPassword())
+                .resetPasswordToken("1312sd34335")
                 .createdTime(LocalDateTime.now())
                 .build();
 
@@ -94,7 +95,7 @@ class UserRepoTest {
     }
 
     @Test
-    void givenEmailCorrect_whenGetUserByEmailAndPasswordAndEnabledTrue_thenGetUserSuccess(){
+    void givenEmailCorrect_whenGetUserByEmailAndEnabledTrue_thenGetUserSuccess(){
         User user = initUser(userData);
 
         User existUser = userRepo.getUserByEmailAndEnabledIsTrue(user.getEmail());
@@ -108,7 +109,7 @@ class UserRepoTest {
     }
 
     @Test
-    void givenEmailWrong_whenGetUserByEmailAndPasswordAndEnabledTrue_thenReturnNull(){
+    void givenEmailWrong_whenGetUserByEmailAndEnabledTrue_thenReturnNull(){
         initUser(userData);
 
         User existUser = userRepo.getUserByEmailAndEnabledIsTrue("1234");
@@ -125,5 +126,28 @@ class UserRepoTest {
         assertEquals(user.getEmail(), updatedUser.getEmail());
         assertEquals(user.getPassword(), updatedUser.getPassword());
         assertEquals(user.getId(), updatedUser.getId());
+    }
+
+    @Test
+    void givenResetPasswordExist_whenGetUserByResetPasswordAndEnabledTrue_thenGetUserSuccess(){
+        User user = initUser(userData);
+
+        User existUser = userRepo.getUserByResetPasswordTokenAndEnabledIsTrue(user.getResetPasswordToken());
+
+        assertEquals(user.getUserName(), existUser.getUserName());
+        assertEquals(user.getFullName(), existUser.getFullName());
+        assertEquals(user.getEmail(), existUser.getEmail());
+        assertEquals(user.getPhoneNumber(), existUser.getPhoneNumber());
+        assertEquals(user.getUserName(), existUser.getUserName());
+        assertEquals(user.getResetPasswordToken(), existUser.getResetPasswordToken());
+        assertTrue(existUser.getEnabled());
+    }
+
+    @Test
+    void givenResetPasswordNotExist_whenGetUserByResetPasswordAndEnabledTrue_thenReturnNull(){
+        initUser(userData);
+
+        User existUser = userRepo.getUserByResetPasswordTokenAndEnabledIsTrue("1234");
+        assertNull(existUser);
     }
 }
