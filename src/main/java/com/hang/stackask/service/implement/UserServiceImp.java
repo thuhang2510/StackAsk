@@ -3,6 +3,7 @@ package com.hang.stackask.service.implement;
 import com.hang.stackask.data.AddUserData;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.User;
+import com.hang.stackask.exception.FailedToUpdateUserException;
 import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.interfaces.IUserService;
@@ -75,6 +76,26 @@ public class UserServiceImp implements IUserService {
         updateResetPassword(token, email);
 
         String resetPasswordLink = siteURL + "/reset_password?token=" + token;
-        return emailUtil.sendEmail(email, resetPasswordLink);
+        emailUtil.sendResetPasswordMail(email, resetPasswordLink);
+
+        return token;
+    }
+
+    @Override
+    public String resetPassword(String resetPasswordToken, String nPassword) {
+        User existedUser = userRepository.getUserByResetPasswordTokenAndEnabledIsTrue(resetPasswordToken);
+
+        if (existedUser == null)
+            throw new UserNotFoundException("user does not ask for password reset");
+
+        existedUser.setPassword(passwordEncoder.encode(nPassword));
+        existedUser.setResetPasswordToken(null);
+
+        User updatedUser = userRepository.save(existedUser);
+
+        if(updatedUser == null)
+            throw new FailedToUpdateUserException("failed to update password");
+
+        return "update password success";
     }
 }
