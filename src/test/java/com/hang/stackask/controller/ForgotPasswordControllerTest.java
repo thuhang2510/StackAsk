@@ -54,7 +54,7 @@ public class ForgotPasswordControllerTest {
     void givenEmailValid_whenForgotPassword_thenSendEmailSuccess() throws Exception {
         final String MESSAGE_SEND_EMAIL_SUCCESS = "send email success";
 
-        given(iUserService.sendMail(EMAIL, SITE_URL)).willReturn(MESSAGE_SEND_EMAIL_SUCCESS);
+        given(iUserService.forgotPassword(EMAIL, SITE_URL)).willReturn(MESSAGE_SEND_EMAIL_SUCCESS);
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/forgot_password")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -73,7 +73,7 @@ public class ForgotPasswordControllerTest {
     void givenSendMailThrowsUserNotFoundException_whenForgotPassword_thenSendEmailFail() throws Exception {
         String message = "user not exist";
 
-        given(iUserService.sendMail(EMAIL, SITE_URL)).willThrow(new UserNotFoundException(message));
+        given(iUserService.forgotPassword(EMAIL, SITE_URL)).willThrow(new UserNotFoundException(message));
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/forgot_password")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -91,7 +91,7 @@ public class ForgotPasswordControllerTest {
     void givenSendMailThrowsMessagingException_whenForgotPassword_thenSendEmailFail() throws Exception {
         String message = "message exception";
 
-        given(iUserService.sendMail(EMAIL, SITE_URL)).willThrow(new MessagingException(message));
+        given(iUserService.forgotPassword(EMAIL, SITE_URL)).willThrow(new MessagingException(message));
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/forgot_password")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
