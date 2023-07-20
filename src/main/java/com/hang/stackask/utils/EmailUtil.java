@@ -18,13 +18,9 @@ public class EmailUtil {
     @Value("${spring.mail.username}")
     private String username;
 
-    public String sendResetPasswordMail(String email, String resetPasswordLink) throws MessagingException, UnsupportedEncodingException {
+    public String sendMail(String email, String subject, String content) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-        String subject = "Here's the link to reset your password";
-        String content = "Hello, You have requested to reset your password."
-                + "Click the link below to change your password"
-                + "<a href=\"" + resetPasswordLink + "\"> Change password</a>" + "";
 
         helper.setFrom(username, "StackAsk Support");
         helper.setTo(email);
