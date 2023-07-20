@@ -36,7 +36,7 @@ public class User extends CommonEntity {
     private String password;
 
     @Builder.Default
-    private Boolean enabled = true;
+    private Boolean enabled = false;
 
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
