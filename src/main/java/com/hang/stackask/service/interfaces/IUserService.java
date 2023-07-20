@@ -7,8 +7,9 @@ import jakarta.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 
 public interface IUserService {
-    UserData create(AddUserData data);
+    UserData create(AddUserData data, String siteURL) throws MessagingException, UnsupportedEncodingException;
     UserData getByEmailAndPassword(String email, String password);
-    String sendMail(String email, String siteURL) throws MessagingException, UnsupportedEncodingException;
+    String forgotPassword(String email, String siteURL) throws MessagingException, UnsupportedEncodingException;
     String resetPassword(String resetPasswordToken, String nPassword);
+    UserData confirm(Long userId);
 }
