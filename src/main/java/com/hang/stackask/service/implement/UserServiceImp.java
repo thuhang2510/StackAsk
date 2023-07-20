@@ -4,6 +4,7 @@ import com.hang.stackask.data.AddUserData;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.User;
 import com.hang.stackask.exception.FailedToUpdateUserException;
+import com.hang.stackask.exception.UserAlreadyExistException;
 import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.interfaces.IUserService;
@@ -39,6 +40,10 @@ public class UserServiceImp implements IUserService {
 
     private User create(AddUserData data) {
         User userEntity = modelMapper.map(data, User.class);
+        User existedUser = userRepository.getUserByEmailAndEnabledIsTrue(userEntity.getEmail());
+
+        if(existedUser != null)
+            throw new UserAlreadyExistException("There is an account with that email address: " + userEntity.getEmail());
 
         userEntity.setCreatedTime(LocalDateTime.now());
         userEntity.setPassword(passwordEncoder.encode(data.getPassword()));

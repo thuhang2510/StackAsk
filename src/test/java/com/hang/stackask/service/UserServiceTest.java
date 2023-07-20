@@ -8,7 +8,9 @@ import com.hang.stackask.exception.UserNotFoundException;
 import com.hang.stackask.repository.UserRepository;
 import com.hang.stackask.service.implement.UserServiceImp;
 import com.hang.stackask.service.interfaces.IUserService;
+import com.hang.stackask.service.interfaces.IVerificationTokenService;
 import com.hang.stackask.utils.EmailUtil;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,11 +23,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(SpringExtension.class)
@@ -53,11 +57,16 @@ public class UserServiceTest {
     @MockBean
     private EmailUtil emailUtil;
 
+    @MockBean
+    private IVerificationTokenService iVerificationTokenService;
+
     private AddUserData addUserData;
     private User userEntity;
     private User convertDataToEntity;
     private UserData userData;
-    private String PASSWORD_ENCODER = "$2a$10$UfxGxMURPZsfEwvaIieSeOZuPoYeDszGYQcCASDNIPpfQJBgtHC0e";
+    private final String PASSWORD_ENCODER = "$2a$10$UfxGxMURPZsfEwvaIieSeOZuPoYeDszGYQcCASDNIPpfQJBgtHC0e";
+    private final String SITE_URL = "http://localhost:8080/api/v1/";
+    private final String TOKEN = "Fqeu9KxPCxDSXea4hhs71StnVH2S93LrgnBRImOA6mRHE6yJdiGtmeM";
 
     @BeforeEach
     public void init(){
@@ -99,47 +108,62 @@ public class UserServiceTest {
     }
 
     @Test
-    void givenValidAddUserData_whenCreateUser_thenCreateUserSuccess(){
+    void givenValidAddUserData_whenCreateUser_thenCreateUserSuccess() throws MessagingException, UnsupportedEncodingException {
+        given(iVerificationTokenService.create(userEntity.getId())).willReturn(TOKEN);
+        given(emailUtil.sendMail(any(), any(), any())).willReturn("send mail success");
+
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
         given(userRepository.save(convertDataToEntity)).willReturn(userEntity);
+        given(userRepository.getUserByEmailAndEnabledIsTrue(userEntity.getEmail())).willReturn(null);
 
         given(modelMapper.map(addUserData, User.class)).willReturn(convertDataToEntity);
         given(modelMapper.map(userEntity, UserData.class)).willReturn(userData);
 
-        UserData actualUser = iUserService.create(addUserData);
+        UserData actualUser = iUserService.create(addUserData, SITE_URL);
 
         assertSame(userData, actualUser);
     }
 
     @Test
-    void givenMethodSaveThrowsException_whenCreateUser_thenThrowsException(){
+    void givenMethodSaveThrowsException_whenCreateUser_thenThrowsException() throws MessagingException, UnsupportedEncodingException {
+        given(iVerificationTokenService.create(userEntity.getId())).willReturn(TOKEN);
+        given(emailUtil.sendMail(any(), any(), any())).willReturn("send mail success");
+
+        given(userRepository.getUserByEmailAndEnabledIsTrue(userEntity.getEmail())).willReturn(null);
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
 
         given(userRepository.save(convertDataToEntity)).willThrow(new RuntimeException("Exception"));
         given(modelMapper.map(addUserData, User.class)).willReturn(convertDataToEntity);
 
-        assertThrows(RuntimeException.class, () -> iUserService.create(addUserData));
+        assertThrows(RuntimeException.class, () -> iUserService.create(addUserData, SITE_URL));
     }
 
     @Test
-    void givenCanNotMapDataToEntity_whenCreateUser_thenThrowsMappingException(){
+    void givenCanNotMapDataToEntity_whenCreateUser_thenThrowsMappingException() throws MessagingException, UnsupportedEncodingException {
+        given(iVerificationTokenService.create(userEntity.getId())).willReturn(TOKEN);
+        given(emailUtil.sendMail(any(), any(), any())).willReturn("send mail success");
+
+        given(userRepository.getUserByEmailAndEnabledIsTrue(userEntity.getEmail())).willReturn(null);
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
 
         given(userRepository.save(convertDataToEntity)).willReturn(userEntity);
         given(modelMapper.map(addUserData, User.class)).willThrow(new MappingException(new ArrayList<>()));
 
-        assertThrows(MappingException.class, () -> iUserService.create(addUserData));
+        assertThrows(MappingException.class, () -> iUserService.create(addUserData, SITE_URL));
     }
 
     @Test
-    void givenUserNotSaveInDbAndCanNotMapEntityToData_whenCreateUser_thenThrowsMappingException(){
+    void givenUserNotSaveInDbAndCanNotMapEntityToData_whenCreateUser_thenNullPointerException() throws MessagingException, UnsupportedEncodingException {
+        given(iVerificationTokenService.create(null)).willThrow(new NullPointerException("user is null, can't get id from user"));
+        given(emailUtil.sendMail(any(), any(), any())).willReturn("send mail success");
+
+        given(userRepository.getUserByEmailAndEnabledIsTrue(userEntity.getEmail())).willReturn(null);
         given(passwordEncoder.encode(addUserData.getPassword())).willReturn(PASSWORD_ENCODER);
         given(userRepository.save(convertDataToEntity)).willReturn(null);
 
         given(modelMapper.map(addUserData, User.class)).willReturn(convertDataToEntity);
-        given(modelMapper.map(null, UserData.class)).willThrow(new MappingException(new ArrayList<>()));
 
-        assertThrows(MappingException.class, () -> iUserService.create(addUserData));
+        assertThrows(NullPointerException.class, () -> iUserService.create(addUserData, SITE_URL));
     }
 
     @Test
