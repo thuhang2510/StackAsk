@@ -3,7 +3,6 @@ package com.hang.stackask.controller;
 import com.hang.stackask.request.ForgotPasswordRequest;
 import com.hang.stackask.request.ResetPasswordRequest;
 import com.hang.stackask.response.SendMailResponse;
-import com.hang.stackask.response.UserResponse;
 import com.hang.stackask.service.interfaces.IUserService;
 import com.hang.stackask.utils.Utility;
 import com.hang.stackask.validator.ForgotPasswordValidator;
@@ -30,8 +29,7 @@ public class ForgotPasswordController {
     public ResponseEntity<SendMailResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
         String email = forgotPasswordRequest.getEmail();
         String siteURL = Utility.getSiteURL(request);
-
-        String resetPasswordToken = iUserService.sendMail(email, siteURL);
+        String resetPasswordToken = iUserService.forgotPassword(email, siteURL);
         SendMailResponse sendMailResponse = SendMailResponse.builder().resetPasswordToken(resetPasswordToken).build();
 
         return new ResponseEntity<>(sendMailResponse, HttpStatus.OK);
