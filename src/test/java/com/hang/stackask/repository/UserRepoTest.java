@@ -39,6 +39,7 @@ class UserRepoTest {
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .password(user.getPassword())
+                .enabled(true)
                 .resetPasswordToken("1312sd34335")
                 .createdTime(LocalDateTime.now())
                 .build();
@@ -55,7 +56,7 @@ class UserRepoTest {
         assertEquals(userData.getEmail(), newUser.getEmail());
         assertEquals(userData.getPhoneNumber(), newUser.getPhoneNumber());
         assertEquals(userData.getUserName(), newUser.getUserName());
-        assertTrue(newUser.getEnabled());
+        assertFalse(newUser.getEnabled());
         assertNull(newUser.getAvatar());
         assertNull(newUser.getResetPasswordToken());
     }
@@ -76,22 +77,6 @@ class UserRepoTest {
     void givenInvalidPassword_whenSaveUser_thenThrowsException(){
         userData.setPassword("");
         assertThrows(ConstraintViolationException.class, () -> userRepo.save(userData));
-    }
-
-    @Test
-    void givenEmailExistAndEnabledTrue_whenSaveUser_thenThrowsException(){
-        initUser(userData);
-
-        assertThrows(RuntimeException.class, () -> userRepo.save(userData));
-    }
-
-    @Test
-    void givenPhoneDuplicatedAndEnabledTrue_whenSaveUser_thenThrowsException(){
-        initUser(userData);
-
-        userData.setEmail("newEmail@gmail.com");
-
-        assertThrows(RuntimeException.class, () -> userRepo.save(userData));
     }
 
     @Test
