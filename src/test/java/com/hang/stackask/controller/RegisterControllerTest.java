@@ -6,6 +6,7 @@ import com.hang.stackask.exception.PasswordMismatchException;
 import com.hang.stackask.request.RegisterRequest;
 import com.hang.stackask.response.UserResponse;
 import com.hang.stackask.service.interfaces.IUserService;
+import com.hang.stackask.service.interfaces.IVerificationTokenService;
 import com.hang.stackask.utils.Utility;
 import com.hang.stackask.validator.RegisterValidator;
 import org.json.JSONObject;
@@ -43,10 +44,15 @@ public class RegisterControllerTest {
     @MockBean
     private RegisterValidator registerValidator;
 
+    @MockBean
+    private IVerificationTokenService iVerificationTokenService;
+
     private RegisterRequest registerRequest;
     private AddUserData addUserData;
     private UserData userData;
     private UserResponse userResponse;
+
+    private final String SITE_URL = "http://localhost/api/v1";
 
     @BeforeEach
     private void init(){
@@ -87,7 +93,7 @@ public class RegisterControllerTest {
         doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
-        given(iUserService.create(addUserData)).willReturn(userData);
+        given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
         given(modelMapper.map(userData, UserResponse.class)).willReturn(userResponse);
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/register")
@@ -117,7 +123,7 @@ public class RegisterControllerTest {
         doThrow(new PasswordMismatchException(messageException)).when(registerValidator).checkPasswordsMatch(registerRequest);
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
-        given(iUserService.create(addUserData)).willReturn(userData);
+        given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
         given(modelMapper.map(userData, UserResponse.class)).willReturn(userResponse);
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/register")
@@ -139,7 +145,7 @@ public class RegisterControllerTest {
         doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
-        given(iUserService.create(addUserData)).willReturn(userData);
+        given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
         given(modelMapper.map(userData, UserResponse.class)).willReturn(userResponse);
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/register")
@@ -161,7 +167,7 @@ public class RegisterControllerTest {
         doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
-        given(iUserService.create(addUserData)).willReturn(userData);
+        given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
         given(modelMapper.map(userData, UserResponse.class)).willReturn(userResponse);
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/register")
@@ -183,7 +189,7 @@ public class RegisterControllerTest {
         doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
-        given(iUserService.create(addUserData)).willReturn(userData);
+        given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
         given(modelMapper.map(userData, UserResponse.class)).willReturn(userResponse);
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/register")
