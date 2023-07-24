@@ -1,5 +1,6 @@
 package com.hang.stackask.handler;
 
+import com.hang.stackask.exception.NotLoggedInException;
 import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
         LOGGER.info("invalid argument: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid argument");
+    }
+
+    @ExceptionHandler(NotLoggedInException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String handleNotLoggedInException(NotLoggedInException ex) {
+        return "You are not logged in.";
     }
 
     @ExceptionHandler(BindException.class)
