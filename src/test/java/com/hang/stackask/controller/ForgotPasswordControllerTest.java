@@ -7,11 +7,14 @@ import com.hang.stackask.request.ResetPasswordRequest;
 import com.hang.stackask.service.interfaces.IUserService;
 import com.hang.stackask.utils.Utility;
 import com.hang.stackask.validator.ForgotPasswordValidator;
+import com.hang.stackask.validator.RegisterValidator;
 import jakarta.mail.MessagingException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,8 +25,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mockStatic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ExtendWith(SpringExtension.class)
@@ -34,9 +37,6 @@ public class ForgotPasswordControllerTest {
 
     @MockBean
     private IUserService iUserService;
-
-    @MockBean
-    private ForgotPasswordValidator forgotPasswordValidator;
 
     private ForgotPasswordRequest forgotPasswordRequest;
     private ResetPasswordRequest resetPasswordRequest;
@@ -113,7 +113,11 @@ public class ForgotPasswordControllerTest {
         String nPassword = resetPasswordRequest.getPassword();
         String messageException = "Password and retype password not match";
 
-        doThrow(new PasswordMismatchException(messageException)).when(forgotPasswordValidator).checkPasswordsMatch(resetPasswordRequest);
+        try(MockedStatic mocked = mockStatic(ForgotPasswordValidator.class)) {
+            mocked.when(() -> ForgotPasswordValidator.checkPasswordsMatch(resetPasswordRequest))
+                    .thenThrow(new PasswordMismatchException(messageException));
+        }
+
         given(iUserService.resetPassword(resetPasswordToken, nPassword)).willReturn("update password success");
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/reset_password?token=" + resetPasswordToken)
@@ -133,7 +137,11 @@ public class ForgotPasswordControllerTest {
         String resetPasswordToken = "6gT1A7vfnbhXuU9PaRfePxEy1NKkE9QSt9Vfw9b7Maiel5mbQ59AMPL";
         String nPassword = resetPasswordRequest.getPassword();
 
-        doNothing().when(forgotPasswordValidator).checkPasswordsMatch(resetPasswordRequest);
+        try(MockedStatic mocked = mockStatic(ForgotPasswordValidator.class)) {
+            mocked.when(() -> ForgotPasswordValidator.checkPasswordsMatch(resetPasswordRequest))
+                    .thenAnswer((Answer<Void>) invocation -> null);
+        }
+
         given(iUserService.resetPassword(resetPasswordToken, nPassword)).willReturn("update password success");
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/reset_password?token=" + resetPasswordToken)
@@ -154,7 +162,11 @@ public class ForgotPasswordControllerTest {
         String nPassword = resetPasswordRequest.getPassword();
         String messageException = "exception";
 
-        doNothing().when(forgotPasswordValidator).checkPasswordsMatch(resetPasswordRequest);
+        try(MockedStatic mocked = mockStatic(ForgotPasswordValidator.class)) {
+            mocked.when(() -> ForgotPasswordValidator.checkPasswordsMatch(resetPasswordRequest))
+                    .thenAnswer((Answer<Void>) invocation -> null);
+        }
+
         given(iUserService.resetPassword(resetPasswordToken, nPassword)).willThrow(new RuntimeException(messageException));
 
         MvcResult mvcResult = mvc.perform(post("/api/v1/reset_password?token=" + resetPasswordToken)

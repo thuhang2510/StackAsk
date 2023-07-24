@@ -5,7 +5,6 @@ import com.hang.stackask.request.ResetPasswordRequest;
 import com.hang.stackask.response.SendMailResponse;
 import com.hang.stackask.service.interfaces.IUserService;
 import com.hang.stackask.utils.Utility;
-import com.hang.stackask.validator.ForgotPasswordValidator;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -16,14 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 
+import static com.hang.stackask.validator.ForgotPasswordValidator.checkPasswordsMatch;
+
 @RestController
 @RequestMapping("/api/v1")
 public class ForgotPasswordController {
     @Autowired
     private IUserService iUserService;
-
-    @Autowired
-    private ForgotPasswordValidator forgotPasswordValidator;
 
     @PostMapping("/forgot_password")
     public ResponseEntity<SendMailResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
@@ -37,7 +35,7 @@ public class ForgotPasswordController {
 
     @PostMapping("/reset_password")
     public ResponseEntity<String> resetPassword(@RequestParam(name = "token") String token, @RequestBody ResetPasswordRequest resetPasswordRequest){
-        forgotPasswordValidator.checkPasswordsMatch(resetPasswordRequest);
+        checkPasswordsMatch(resetPasswordRequest);
 
         return new ResponseEntity<>(iUserService.resetPassword(token, resetPasswordRequest.getPassword()), HttpStatus.OK);
     }
