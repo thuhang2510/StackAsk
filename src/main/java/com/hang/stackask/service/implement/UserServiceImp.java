@@ -1,6 +1,7 @@
 package com.hang.stackask.service.implement;
 
 import com.hang.stackask.data.AddUserData;
+import com.hang.stackask.data.UpdateAccountData;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.User;
 import com.hang.stackask.exception.FailedToUpdateUserException;
@@ -16,9 +17,15 @@ import org.modelmapper.internal.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static com.hang.stackask.utils.MapperUtil.mapList;
 
 @Component
 public class UserServiceImp implements IUserService {
@@ -45,6 +52,7 @@ public class UserServiceImp implements IUserService {
         if(existedUser != null)
             throw new UserAlreadyExistException("There is an account with that email address: " + userEntity.getEmail());
 
+        userEntity.setUuid(UUID.randomUUID().toString());
         userEntity.setCreatedTime(LocalDateTime.now());
         userEntity.setPassword(passwordEncoder.encode(data.getPassword()));
 
@@ -84,6 +92,85 @@ public class UserServiceImp implements IUserService {
 
         UserData userData = modelMapper.map(updatedUser, UserData.class);
 
+        return userData;
+    }
+
+    @Override
+    public UserData getById(Long userId) {
+        User userEntity = userRepository.getReferenceById(userId);
+
+        if(userEntity == null)
+            throw new UserNotFoundException("user not found");
+
+        UserData userData = modelMapper.map(userEntity, UserData.class);
+
+        return userData;
+    }
+
+    @Override
+    public List<UserData> getAll() {
+        List<User> users = userRepository.getAllByEnabledIsTrue();
+        List<UserData> userDatas = mapList(users, UserData.class);
+
+        return userDatas;
+    }
+
+    @Override
+    public UserData updateAvatar(Long userId, MultipartFile file) throws IOException {
+        User userEntity = userRepository.getReferenceById(userId);
+
+        if(userEntity == null)
+            throw new UserNotFoundException("user not found");
+
+        userEntity.setAvatar(file.getBytes());
+        userEntity.setUpdatedTime(LocalDateTime.now());
+        userRepository.save(userEntity);
+
+        UserData userData = modelMapper.map(userEntity, UserData.class);
+        return userData;
+    }
+
+    @Override
+    public UserData updatePassword(Long userId, String nPassword) {
+        User userEntity = userRepository.getReferenceById(userId);
+
+        if(userEntity == null)
+            throw new UserNotFoundException("user not found");
+
+        userEntity.setPassword(passwordEncoder.encode(nPassword));
+        userEntity.setUpdatedTime(LocalDateTime.now());
+        userRepository.save(userEntity);
+
+        UserData userData = modelMapper.map(userEntity, UserData.class);
+        return userData;
+    }
+
+    @Override
+    public UserData update(Long userId, UpdateAccountData updateAccountData){
+        User userEntity = userRepository.getReferenceById(userId);
+
+        if(userEntity == null)
+            throw new UserNotFoundException("user not found");
+
+        userEntity.setFullName(updateAccountData.getFullName());
+        userEntity.setEmail(updateAccountData.getEmail());
+        userEntity.setPhoneNumber(updateAccountData.getPhoneNumber());
+        userEntity.setUpdatedTime(LocalDateTime.now());
+
+        userRepository.save(userEntity);
+
+        UserData userData = modelMapper.map(userEntity, UserData.class);
+        return userData;
+    }
+
+    @Override
+    public UserData getByUuid(String uuid) {
+        User userEntity = userRepository.getUserByUuidAndEnabledIsTrue(uuid);
+
+        if(userEntity == null)
+            throw new UserNotFoundException("user not found");
+
+        UserData userData = modelMapper.map(userEntity, UserData.class);
         return userData;
     }
 
