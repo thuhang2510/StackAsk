@@ -4,13 +4,14 @@ DROP TABLE `tbl_user`;
 
 CREATE TABLE IF NOT EXISTS `tbl_user` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
+    `uuid` VARCHAR(70) UNIQUE,
 	`username` VARCHAR(45),
     `fullname` NVARCHAR(45),
     `email` VARCHAR(45),
     `phonenumber` VARCHAR(15),
     `password` VARCHAR(70),
     `enabled` BOOLEAN DEFAULT 1,
-    `reset_password_token` VARCHAR(45) DEFAULT NULL,
+    `reset_password_token` VARCHAR(70) DEFAULT NULL,
     `avatar` BLOB DEFAULT NULL,
 	`created_time` datetime DEFAULT NULL,
     `updated_time` datetime DEFAULT NULL,

@@ -18,6 +18,9 @@ public class User extends CommonEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "uuid")
+    private String uuid;
+
     @Column(name = "username")
     @NotBlank(message = "User name is mandatory")
     private String userName;
