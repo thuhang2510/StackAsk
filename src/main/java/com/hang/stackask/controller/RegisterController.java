@@ -9,7 +9,6 @@ import com.hang.stackask.response.UserResponse;
 import com.hang.stackask.service.interfaces.IUserService;
 import com.hang.stackask.service.interfaces.IVerificationTokenService;
 import com.hang.stackask.utils.Utility;
-import com.hang.stackask.validator.RegisterValidator;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -22,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
+import static com.hang.stackask.validator.RegisterValidator.checkPasswordsMatch;
+
 @RestController
 @RequestMapping("/api/v1")
 public class RegisterController {
@@ -32,19 +33,16 @@ public class RegisterController {
     private ModelMapper modelMapper;
 
     @Autowired
-    private RegisterValidator registerValidator;
-
-    @Autowired
     private IVerificationTokenService iVerificationTokenService;
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
-        registerValidator.checkPasswordsMatch(registerRequest);
+        checkPasswordsMatch(registerRequest);
         String siteURL = Utility.getSiteURL(request);
 
-        final AddUserData addUserData = modelMapper.map(registerRequest, AddUserData.class);
-        final UserData userData = iUserService.create(addUserData, siteURL);
-        final UserResponse userResponse = modelMapper.map(userData, UserResponse.class);
+        AddUserData addUserData = modelMapper.map(registerRequest, AddUserData.class);
+        UserData userData = iUserService.create(addUserData, siteURL);
+        UserResponse userResponse = modelMapper.map(userData, UserResponse.class);
 
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }

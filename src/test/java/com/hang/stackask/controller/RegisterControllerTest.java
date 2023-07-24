@@ -13,6 +13,9 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,8 +28,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ExtendWith(SpringExtension.class)
@@ -40,9 +42,6 @@ public class RegisterControllerTest {
 
     @MockBean
     private ModelMapper modelMapper;
-
-    @MockBean
-    private RegisterValidator registerValidator;
 
     @MockBean
     private IVerificationTokenService iVerificationTokenService;
@@ -90,7 +89,10 @@ public class RegisterControllerTest {
 
     @Test
     public void givenValidRegisterRequest_whenRegisterIsUsed_thenRegisterSuccess() throws Exception {
-        doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
+        try(MockedStatic mocked = mockStatic(RegisterValidator.class)) {
+            mocked.when(() -> RegisterValidator.checkPasswordsMatch(registerRequest))
+                    .thenAnswer((Answer<Void>) invocation -> null);
+        }
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
         given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
@@ -117,10 +119,12 @@ public class RegisterControllerTest {
     @Test
     public void givenPasswordNotMatch_whenRegisterIsUsed_thenRegisterFail() throws Exception {
         String messageException = "Password and retype password not match";
-
         registerRequest.setRetypePassword("12345678");
 
-        doThrow(new PasswordMismatchException(messageException)).when(registerValidator).checkPasswordsMatch(registerRequest);
+        try(MockedStatic mocked = mockStatic(RegisterValidator.class)) {
+            mocked.when(() -> RegisterValidator.checkPasswordsMatch(registerRequest))
+                    .thenThrow(new PasswordMismatchException(messageException));
+        }
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
         given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
@@ -142,7 +146,10 @@ public class RegisterControllerTest {
     public void givenEmailIsBlank_whenRegisterIsUsed_thenRegisterFail() throws Exception {
         registerRequest.setEmail("");
 
-        doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
+        try(MockedStatic mocked = mockStatic(RegisterValidator.class)) {
+            mocked.when(() -> RegisterValidator.checkPasswordsMatch(registerRequest))
+                    .thenAnswer((Answer<Void>) invocation -> null);
+        }
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
         given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
@@ -164,7 +171,10 @@ public class RegisterControllerTest {
     public void givenInvalidEmail_whenRegisterIsUsed_thenRegisterFail() throws Exception {
         registerRequest.setEmail("12131");
 
-        doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
+        try(MockedStatic mocked = mockStatic(RegisterValidator.class)) {
+            mocked.when(() -> RegisterValidator.checkPasswordsMatch(registerRequest))
+                    .thenAnswer((Answer<Void>) invocation -> null);
+        }
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
         given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
@@ -186,7 +196,10 @@ public class RegisterControllerTest {
     public void givenUserNameIsBlank_whenRegisterIsUsed_thenRegisterFail() throws Exception {
         registerRequest.setUserName("");
 
-        doNothing().when(registerValidator).checkPasswordsMatch(registerRequest);
+        try(MockedStatic mocked = mockStatic(RegisterValidator.class)) {
+            mocked.when(() -> RegisterValidator.checkPasswordsMatch(registerRequest))
+                    .thenAnswer((Answer<Void>) invocation -> null);
+        }
 
         given(modelMapper.map(registerRequest, AddUserData.class)).willReturn(addUserData);
         given(iUserService.create(addUserData, SITE_URL)).willReturn(userData);
