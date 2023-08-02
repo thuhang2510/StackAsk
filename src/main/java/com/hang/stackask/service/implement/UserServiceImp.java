@@ -16,7 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.internal.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.util.UUID;
 
 import static com.hang.stackask.utils.MapperUtil.mapList;
 
-@Component
+@Service
 public class UserServiceImp implements IUserService {
 
     @Autowired

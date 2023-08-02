@@ -8,9 +8,9 @@ import com.hang.stackask.service.interfaces.IVerificationTokenService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.internal.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class VerificationTokenServiceImp implements IVerificationTokenService {
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;

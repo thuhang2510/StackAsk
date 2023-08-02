@@ -1,4 +1,4 @@
-package com.hang.stackask.utils;
+package com.hang.stackask.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

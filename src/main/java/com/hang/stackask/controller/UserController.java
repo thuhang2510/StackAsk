@@ -3,7 +3,6 @@ package com.hang.stackask.controller;
 import com.hang.stackask.data.UserData;
 import com.hang.stackask.response.UserResponse;
 import com.hang.stackask.service.interfaces.IUserService;
-import jakarta.websocket.server.PathParam;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

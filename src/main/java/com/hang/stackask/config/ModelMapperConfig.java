@@ -1,4 +1,4 @@
-package com.hang.stackask.utils;
+package com.hang.stackask.config;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
