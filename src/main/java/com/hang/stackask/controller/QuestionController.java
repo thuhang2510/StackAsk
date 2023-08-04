@@ -54,9 +54,21 @@ public class QuestionController {
             @RequestParam("limit") int limit,
             @RequestParam("next_page_token") String nextPageToken) throws UnsupportedEncodingException {
 
-        final List<QuestionData> questionsData = iQuestionService.getBooks(nextPageToken, limit);
+        final List<QuestionData> questionsData = iQuestionService.getQuestionsWithPagination(nextPageToken, limit);
         PageResponse<List<QuestionResponse>> pageResponse = ListToPaginationConverter.toPagination(questionsData, limit);
 
         return new ResponseEntity<>(pageResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<PageResponse<List<QuestionResponse>>> getByKeyword(
+            @RequestParam("keyword") String keyword,
+            @RequestParam("limit") int limit,
+            @RequestParam("next_page_token") String nextPageToken) throws UnsupportedEncodingException {
+
+        List<QuestionData> questionsData = iQuestionService.getByTitleOrContentWithPagination(keyword, nextPageToken, limit);
+        PageResponse<List<QuestionResponse>> questionResponses = ListToPaginationConverter.toPagination(questionsData, limit);
+
+        return new ResponseEntity<>(questionResponses, HttpStatus.OK);
     }
 }

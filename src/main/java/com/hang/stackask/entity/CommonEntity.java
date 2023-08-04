@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @MappedSuperclass
 public class CommonEntity {
-    private LocalDateTime createdTime;
+    @Builder.Default
+    private LocalDateTime createdTime = LocalDateTime.now();
     private LocalDateTime updatedTime;
 }

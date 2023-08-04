@@ -9,5 +9,6 @@ import java.util.List;
 public interface IQuestionService {
     QuestionData getByUuid(String uuid);
     QuestionData create(Long userId, QuestionRequest questionRequest);
-    List<QuestionData> getBooks(String nextPageToken, int limit) throws UnsupportedEncodingException;
+    List<QuestionData> getQuestionsWithPagination(String nextPageToken, int limit) throws UnsupportedEncodingException;
+    List<QuestionData> getByTitleOrContentWithPagination(String keyword, String nextPageToken, int limit) throws UnsupportedEncodingException;
 }
