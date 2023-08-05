@@ -6,34 +6,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class EntityToDocumentConverter {
     @Autowired
-    private LocalDateTimeToTypeConverter localDateTimeToTypeConverter;
+    private LocalDateTimeToTypeConverter converter;
 
     public List<QuestionDoc> toDocuments(List<Question> questions){
         List<QuestionDoc> questionDocs = questions.stream()
-                .map(question -> {
-                    QuestionDoc questionDoc = QuestionDoc.builder()
-                            .id(question.getId())
-                            .userId(question.getUserId())
-                            .content(question.getContent())
-                            .enabled(question.getEnabled())
-                            .category(question.getCategory())
-                            .title(question.getTitle())
-                            .uuid(question.getUuid())
-                            .createdTime(localDateTimeToTypeConverter.convertLocalDateTimeToLong(question.getCreatedTime()))
-                            .build();
-
-                    if(question.getUpdatedTime() != null)
-                        questionDoc.setUpdatedTime(localDateTimeToTypeConverter.convertLocalDateTimeToLong(question.getUpdatedTime()));
-
-                    return questionDoc;
-                })
-                .collect(Collectors.toList());
+                .map(question -> toDocument(question))
+                .toList();
 
         return questionDocs;
+    }
+
+    public QuestionDoc toDocument(Question question){
+        QuestionDoc questionDoc = QuestionDoc.builder()
+                .id(question.getId())
+                .userId(question.getUserId())
+                .content(question.getContent())
+                .enabled(question.getEnabled())
+                .category(question.getCategory())
+                .title(question.getTitle())
+                .uuid(question.getUuid())
+                .vote(question.getVote())
+                .view(question.getView())
+                .createdTime(converter.convertLocalDateTimeToLong(question.getCreatedTime()))
+                .build();
+
+        if(question.getUpdatedTime() != null)
+            questionDoc.setUpdatedTime(converter.convertLocalDateTimeToLong(question.getUpdatedTime()));
+
+        return questionDoc;
     }
 }

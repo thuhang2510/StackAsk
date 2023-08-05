@@ -11,4 +11,7 @@ public interface IQuestionService {
     QuestionData create(Long userId, QuestionRequest questionRequest);
     List<QuestionData> getQuestionsWithPagination(String nextPageToken, int limit) throws UnsupportedEncodingException;
     List<QuestionData> getByTitleOrContentWithPagination(String keyword, String nextPageToken, int limit) throws UnsupportedEncodingException;
+    QuestionData update(Long id, QuestionRequest questionRequest);
+    QuestionData updateVote(Long id);
+    QuestionData updateView(Long id);
 }

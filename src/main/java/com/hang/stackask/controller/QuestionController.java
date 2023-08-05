@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class QuestionController {
     @PostMapping("/create")
     public ResponseEntity<QuestionResponse> create(
             @RequestBody QuestionRequest questionRequest,
-            @RequestHeader("Authorization") String authHeader) throws IOException {
+            @RequestHeader("Authorization") String authHeader){
 
         Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
 
@@ -70,5 +69,37 @@ public class QuestionController {
         PageResponse<List<QuestionResponse>> questionResponses = ListToPaginationConverter.toPagination(questionsData, limit);
 
         return new ResponseEntity<>(questionResponses, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<QuestionResponse> update(
+            @PathVariable("id") Long questionId,
+            @RequestBody QuestionRequest questionRequest,
+            @RequestHeader("Authorization") String authHeader){
+
+        Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
+
+        if (userId == null)
+            throw new NotLoggedInException(NOT_LOGGED_IN);
+
+        QuestionData questionData = iQuestionService.update(questionId, questionRequest);
+        QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
+
+        return new ResponseEntity<>(questionResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/view")
+    public ResponseEntity<QuestionResponse> updateVote(@PathVariable("id") Long questionId,
+                                                       @RequestHeader("Authorization") String authHeader){
+
+        Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
+
+        if (userId == null)
+            throw new NotLoggedInException(NOT_LOGGED_IN);
+
+        QuestionData questionData = iQuestionService.updateView(questionId);
+        QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
+
+        return new ResponseEntity<>(questionResponse, HttpStatus.OK);
     }
 }

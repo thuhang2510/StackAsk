@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +45,8 @@ public class QuestionServiceImp implements IQuestionService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    private static final String UNABLED_GET_LIST_QUESTION = "Unable to get list of questions";
 
     @Override
     public QuestionData getByUuid(String uuid){
@@ -68,18 +71,17 @@ public class QuestionServiceImp implements IQuestionService {
         question.setUserId(userId);
 
         Question createdQuestion = questionJpaRepository.save(question);
-        iDataSyncService.syncDataToElasticsearch();
+        iDataSyncService.syncDataToElasticsearch(createdQuestion);
 
         QuestionData questionData = modelMapper.map(createdQuestion, QuestionData.class);
         return questionData;
     }
 
-    private List<QuestionData> getQuestions(int limit) {
-        Pageable pageable = PageRequest.of(0, limit + 1);
+    private List<QuestionData> getQuestionsByPageable(Pageable pageable) {
         List<Question> questions = questionJpaRepository.findQuestionOrOrderByCreatedTimeAndId(pageable);
 
         if(questions == null)
-            throw new QuestionsDataNotFoundException("Unable to get list of questions");
+            throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
 
         List<QuestionData> questionsData = mapList(questions, QuestionData.class);
         return questionsData;
@@ -87,12 +89,13 @@ public class QuestionServiceImp implements IQuestionService {
 
     @Override
     public List<QuestionData> getQuestionsWithPagination(String nextPageToken, int limit) throws UnsupportedEncodingException {
+        Pageable pageable = PageRequest.of(0, limit + 1);
+
         if(StringUtil.isNoContent(nextPageToken))
-            return getQuestions(limit);
+            return getQuestionsByPageable(pageable);
 
         String decodedNextPageToken = StringUtil.newUtf(Base64.getDecoder().decode(nextPageToken));
 
-        Pageable pageable = PageRequest.of(0, limit + 1);
         List<Question> questions = questionJpaRepository.findQuestions(
                 StringToTypePrimitiveConverter.toInt(decodedNextPageToken), pageable);
 
@@ -100,13 +103,11 @@ public class QuestionServiceImp implements IQuestionService {
         return questionsData;
     }
 
-    private List<QuestionData> getByTitleOrContent(String keyword, int limit) {
-        Pageable pageable = PageRequest.of(0, limit + 1);
-        List<QuestionDoc> questionsDoc = questionEsRepository.findByTitleOrContentAndEnabledIsTrueOrderByIdDesc(
-                keyword, keyword, pageable);
+    private List<QuestionData> getQuestionsByKeywordAndPageable(String keyword, Pageable pageable) {
+        List<QuestionDoc> questionsDoc = questionEsRepository.findByKeyword(keyword, pageable);
 
         if(questionsDoc == null)
-            throw new QuestionsDataNotFoundException("Unable to get list of questions");
+            throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
 
         List<QuestionData> questionsData = mapList(questionsDoc, QuestionData.class);
         return questionsData;
@@ -117,19 +118,70 @@ public class QuestionServiceImp implements IQuestionService {
     public List<QuestionData> getByTitleOrContentWithPagination(
             String keyword, String nextPageToken, int limit) throws UnsupportedEncodingException {
 
-        if(StringUtil.isNoContent(nextPageToken))
-            return getByTitleOrContent(keyword, limit);
-
-        String decodedNextPageToken = StringUtil.newUtf(Base64.getDecoder().decode(nextPageToken));
         Pageable pageable = PageRequest.of(0, limit + 1, Sort.by("id").descending());
 
-        List<QuestionDoc> questionsDoc = questionEsRepository.findByTitleOrContentAndEnabledIsTrue(
-                keyword, keyword, StringToTypePrimitiveConverter.toInt(decodedNextPageToken), pageable);
+        if(StringUtil.isNoContent(nextPageToken))
+            return getQuestionsByKeywordAndPageable(keyword, pageable);
+
+        String decodedNextPageToken = StringUtil.newUtf(Base64.getDecoder().decode(nextPageToken));
+
+        List<QuestionDoc> questionsDoc = questionEsRepository.findByKeywordWithPagination(
+                keyword, StringToTypePrimitiveConverter.toInt(decodedNextPageToken), pageable);
 
         if(questionsDoc == null)
-            throw new QuestionsDataNotFoundException("Unable to get list of questions");
+            throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
 
         List<QuestionData> questionsData = mapList(questionsDoc, QuestionData.class);
         return questionsData;
+    }
+
+    private Question getById(Long id){
+        Question questionEnity = questionJpaRepository.getByIdAndEnabledIsTrue(id);
+
+        if(questionEnity == null)
+            throw new QuestionNotFoundException("question not found");
+
+        return questionEnity;
+    }
+
+    private QuestionData updateQuestion(Question questionExisted, QuestionRequest questionRequest) {
+        if(questionRequest != null){
+            questionExisted.setTitle(questionRequest.getTitle());
+            questionExisted.setContent(questionRequest.getContent());
+            questionExisted.setCategory(questionRequest.getCategory());
+        }
+
+        questionExisted.setUpdatedTime(LocalDateTime.now());
+        questionExisted = questionJpaRepository.save(questionExisted);
+        iDataSyncService.syncDataToElasticsearch(questionExisted);
+
+        return modelMapper.map(questionExisted, QuestionData.class);
+    }
+
+    @Override
+    @Transactional
+    public QuestionData update(Long id, QuestionRequest questionRequest) {
+        Question questionExisted = getById(id);
+        return updateQuestion(questionExisted, questionRequest);
+    }
+
+    @Override
+    @Transactional
+    public QuestionData updateVote(Long id) {
+        Question questionExisted = getById(id);
+        Long vote = questionExisted.getVote();
+
+        questionExisted.setVote(++vote);
+        return updateQuestion(questionExisted, null);
+    }
+
+    @Override
+    @Transactional
+    public QuestionData updateView(Long id) {
+        Question questionExisted = getById(id);
+        Long view = questionExisted.getView();
+
+        questionExisted.setView(++view);
+        return updateQuestion(questionExisted, null);
     }
 }

@@ -67,3 +67,14 @@ ADD COLUMN `parent_uuid` VARCHAR(70) NOT NULL;
 
 ALTER TABLE `tbl_media`
 ADD COLUMN `enabled` BOOLEAN DEFAULT TRUE;
+
+CREATE TABLE IF NOT EXISTS `tbl_tag` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `tbl_question_tag`(
+	`question_id` BIGINT NOT NULL,
+	`tag_id` BIGINT NOT NULL,
+	PRIMARY KEY(`question_id`, `tag_id`)
+) ENGINE=InnoDB;

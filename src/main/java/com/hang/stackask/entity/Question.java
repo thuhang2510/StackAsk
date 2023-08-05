@@ -16,9 +16,7 @@ public class Question extends CommonEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "uuid")
     private String uuid;
-
     private String title;
     private String category;
     private String content;

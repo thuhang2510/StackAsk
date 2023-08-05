@@ -10,8 +10,9 @@ import java.util.List;
 
 @Repository
 public interface QuestionEsRepository extends CrudRepository<QuestionDoc, Long> {
-    List<QuestionDoc> findByTitleOrContentAndEnabledIsTrueOrderByIdDesc(String title, String content, Pageable pageable);
+    @Query("{ \"bool\": { \"must\": [ { \"bool\": { \"should\": [ { \"match\": { \"title\": \"?0\" } }, { \"match\": { \"content\": \"?0\" } } ] } }, { \"term\": { \"enabled\": true } } ] } } ")
+    List<QuestionDoc> findByKeyword(String content, Pageable pageable);
 
-    @Query("{ \"bool\": { \"must\": [ { \"bool\": { \"should\": [ { \"match\": { \"title\": \"?0\" } }, { \"match\": { \"content\": \"?1\" } } ] } }, { \"term\": { \"enabled\": true } }, { \"range\": { \"id\": { \"lt\": ?2 } } } ] } } ")
-    List<QuestionDoc> findByTitleOrContentAndEnabledIsTrue(String title, String content, int id, Pageable pageable);
+    @Query("{ \"bool\": { \"must\": [ { \"bool\": { \"should\": [ { \"match\": { \"title\": \"?0\" } }, { \"match\": { \"content\": \"?0\" } } ] } }, { \"term\": { \"enabled\": true } }, { \"range\": { \"id\": { \"lt\": ?1 } } } ] } } ")
+    List<QuestionDoc> findByKeywordWithPagination(String keyword, int id, Pageable pageable);
 }

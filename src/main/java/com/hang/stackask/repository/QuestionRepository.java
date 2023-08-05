@@ -20,4 +20,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             nativeQuery = true
     )
     List<Question> findQuestions(int id, Pageable pageable);
+
+    Question getByIdAndEnabledIsTrue(long id);
 }
