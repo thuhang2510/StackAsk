@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/questions")
@@ -89,7 +90,7 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}/view")
-    public ResponseEntity<QuestionResponse> updateVote(@PathVariable("id") Long questionId,
+    public ResponseEntity<QuestionResponse> updateView(@PathVariable("id") Long questionId,
                                                        @RequestHeader("Authorization") String authHeader){
 
         Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
@@ -101,5 +102,32 @@ public class QuestionController {
         QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
 
         return new ResponseEntity<>(questionResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/vote")
+    public ResponseEntity<QuestionResponse> updateVote(@PathVariable("id") Long questionId,
+                                                       @RequestHeader("Authorization") String authHeader){
+
+        Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
+
+        if (userId == null)
+            throw new NotLoggedInException(NOT_LOGGED_IN);
+
+        QuestionData questionData = iQuestionService.updateVote(questionId);
+        QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
+
+        return new ResponseEntity<>(questionResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/tags")
+    public ResponseEntity<PageResponse<List<QuestionResponse>>> getByTags(
+            @RequestParam("limit") int limit,
+            @RequestParam("tags") Set<String> tagsName,
+            @RequestParam("next_page_token") String nextPageToken) throws UnsupportedEncodingException {
+
+        List<QuestionData> questionsData = iQuestionService.processGetByTagsInAndCursorAndPageable(tagsName, nextPageToken, limit);
+        PageResponse<List<QuestionResponse>> pageResponse = ListToPaginationConverter.toPagination(questionsData, limit);
+
+        return new ResponseEntity<>(pageResponse, HttpStatus.OK);
     }
 }

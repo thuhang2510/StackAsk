@@ -6,6 +6,8 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -27,4 +29,5 @@ public class QuestionDoc extends CommonDoc{
     private Long userId;
     @Builder.Default
     private Boolean enabled = true;
+    private Set<String> tags;
 }

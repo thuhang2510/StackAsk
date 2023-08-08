@@ -7,6 +7,7 @@ import com.hang.stackask.exception.QuestionNotFoundException;
 import com.hang.stackask.data.QuestionData;
 import com.hang.stackask.entity.Question;
 import com.hang.stackask.exception.QuestionsDataNotFoundException;
+import com.hang.stackask.mapper.interfaces.IQuestionMapper;
 import com.hang.stackask.repository.QuestionRepository;
 import com.hang.stackask.request.QuestionRequest;
 import com.hang.stackask.service.interfaces.IDataSyncService;
@@ -23,9 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.hang.stackask.utils.MapperUtil.mapList;
 
@@ -46,6 +45,9 @@ public class QuestionServiceImp implements IQuestionService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private IQuestionMapper iQuestionMapper;
+
     private static final String UNABLED_GET_LIST_QUESTION = "Unable to get list of questions";
 
     @Override
@@ -64,7 +66,7 @@ public class QuestionServiceImp implements IQuestionService {
     public QuestionData create(Long userId, QuestionRequest questionRequest) {
         iUserService.getById(userId);
 
-        Question question = modelMapper.map(questionRequest, Question.class);
+        Question question = iQuestionMapper.toEntity(questionRequest);
 
         String uuid = UUID.randomUUID().toString();
         question.setUuid("Q" + uuid);
@@ -73,7 +75,7 @@ public class QuestionServiceImp implements IQuestionService {
         Question createdQuestion = questionJpaRepository.save(question);
         iDataSyncService.syncDataToElasticsearch(createdQuestion);
 
-        QuestionData questionData = modelMapper.map(createdQuestion, QuestionData.class);
+        QuestionData questionData = iQuestionMapper.toData(createdQuestion);
         return questionData;
     }
 
@@ -83,7 +85,7 @@ public class QuestionServiceImp implements IQuestionService {
         if(questions == null)
             throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
 
-        List<QuestionData> questionsData = mapList(questions, QuestionData.class);
+        List<QuestionData> questionsData = iQuestionMapper.toDatas(questions);
         return questionsData;
     }
 
@@ -109,8 +111,7 @@ public class QuestionServiceImp implements IQuestionService {
         if(questionsDoc == null)
             throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
 
-        List<QuestionData> questionsData = mapList(questionsDoc, QuestionData.class);
-        return questionsData;
+        return mapList(questionsDoc, QuestionData.class);
     }
 
 
@@ -131,8 +132,7 @@ public class QuestionServiceImp implements IQuestionService {
         if(questionsDoc == null)
             throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
 
-        List<QuestionData> questionsData = mapList(questionsDoc, QuestionData.class);
-        return questionsData;
+        return mapList(questionsDoc, QuestionData.class);
     }
 
     private Question getById(Long id){
@@ -183,5 +183,35 @@ public class QuestionServiceImp implements IQuestionService {
 
         questionExisted.setView(++view);
         return updateQuestion(questionExisted, null);
+    }
+
+    @Override
+    public List<QuestionData> processGetByTagsInAndCursorAndPageable(Set<String> tagsName, String nextPageToken, int cursor) throws UnsupportedEncodingException {
+        Pageable pageable = PageRequest.of(0, cursor + 1, Sort.by("id").descending());
+
+        if(StringUtil.isNoContent(nextPageToken))
+            return getByTagsInAndPageable(tagsName, pageable);
+
+        String decodedNextPageToken = StringUtil.newUtf(Base64.getDecoder().decode(nextPageToken));
+        return getByTagsInAndCursorAndPageable(tagsName, decodedNextPageToken, pageable);
+    }
+
+    private List<QuestionData> getByTagsInAndCursorAndPageable(Set<String> tagsName, String decodedNextPageToken, Pageable pageable) {
+        List<QuestionDoc> questionsDoc = questionEsRepository.findByTagsInAndCursorAndPageable(
+                tagsName, StringToTypePrimitiveConverter.toInt(decodedNextPageToken), pageable);
+
+        if(questionsDoc == null)
+            throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
+
+        return mapList(questionsDoc, QuestionData.class);
+    }
+
+    private List<QuestionData> getByTagsInAndPageable(Set<String> tagsName, Pageable pageable) {
+        List<QuestionDoc> questionsDoc = questionEsRepository.findByTagsIn(tagsName, pageable);
+
+        if(questionsDoc == null)
+            throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
+
+        return mapList(questionsDoc, QuestionData.class);
     }
 }

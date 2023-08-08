@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Set;
+
 @Entity
 @Getter
 @Setter
@@ -32,4 +34,13 @@ public class Question extends CommonEntity{
 
     @Builder.Default
     private Boolean enabled = true;
+
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @JoinTable(name = "tbl_question_tag", joinColumns = { @JoinColumn(name = "question_id") }, inverseJoinColumns = {
+            @JoinColumn(name = "tag_id") })
+    private Set<Tag> tags;
+
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+    }
 }

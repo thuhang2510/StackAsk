@@ -5,6 +5,7 @@ import com.hang.stackask.request.QuestionRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Set;
 
 public interface IQuestionService {
     QuestionData getByUuid(String uuid);
@@ -14,4 +15,5 @@ public interface IQuestionService {
     QuestionData update(Long id, QuestionRequest questionRequest);
     QuestionData updateVote(Long id);
     QuestionData updateView(Long id);
+    List<QuestionData> processGetByTagsInAndCursorAndPageable(Set<String> tagsName, String nextPageToken, int cursor) throws UnsupportedEncodingException;
 }
