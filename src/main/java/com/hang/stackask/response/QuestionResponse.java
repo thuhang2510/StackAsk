@@ -19,5 +19,7 @@ public class QuestionResponse {
     private Long vote;
     private Long view;
     private Long userId;
+
+    @Builder.Default
     private Set<String> tags = new HashSet<>();
 }
