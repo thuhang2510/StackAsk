@@ -8,7 +8,6 @@ import com.hang.stackask.entity.Tag;
 import com.hang.stackask.mapper.interfaces.IQuestionMapper;
 import com.hang.stackask.request.QuestionRequest;
 import com.hang.stackask.service.interfaces.ITagService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +19,6 @@ import java.util.stream.Collectors;
 public class QuestionMapperImpl implements IQuestionMapper {
     @Autowired
     private ITagService iTagService;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     @Autowired
     private LocalDateTimeToTypeConverter converter;
@@ -48,6 +44,24 @@ public class QuestionMapperImpl implements IQuestionMapper {
     }
 
     @Override
+    public Question toEntity(Question questionExist, QuestionRequest questionRequest) {
+        questionExist.setTitle(questionRequest.getTitle());
+        questionExist.setCategory(questionRequest.getCategory());
+        questionExist.setContent(questionRequest.getContent());
+
+        if (questionExist.getTags() == null) {
+            questionExist.setTags(new HashSet<>());
+        }
+
+        questionRequest.getTags().stream().forEach(tagName -> {
+            Tag tag = iTagService.getOrCreatTag(tagName);
+            questionExist.addTag(tag);
+        });
+
+        return questionExist;
+    }
+
+    @Override
     public List<QuestionData> toDatas(List<Question> questions){
         List<QuestionData> questionsData = questions.stream()
                 .map(this::toData)
@@ -58,7 +72,16 @@ public class QuestionMapperImpl implements IQuestionMapper {
 
     @Override
     public QuestionData toData(Question question){
-        QuestionData questionData = modelMapper.map(question, QuestionData.class);
+        QuestionData questionData = QuestionData.builder()
+                .id(question.getId())
+                .userId(question.getUserId())
+                .content(question.getContent())
+                .category(question.getCategory())
+                .title(question.getTitle())
+                .uuid(question.getUuid())
+                .vote(question.getVote())
+                .view(question.getView())
+                .build();
 
         questionData.setTags(question.getTags().stream()
                 .map(Tag::getName)
