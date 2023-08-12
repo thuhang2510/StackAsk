@@ -13,7 +13,7 @@ public interface IQuestionService {
     List<QuestionData> getQuestionsWithPagination(String nextPageToken, int limit) throws UnsupportedEncodingException;
     List<QuestionData> getByTitleOrContentWithPagination(String keyword, String nextPageToken, int limit) throws UnsupportedEncodingException;
     QuestionData update(Long id, QuestionRequest questionRequest);
-    QuestionData updateVote(Long id);
-    QuestionData updateView(Long id);
+    QuestionData updateVote(Long id, QuestionRequest questionRequest);
+    QuestionData updateView(Long id, QuestionRequest questionRequest);
     List<QuestionData> processGetByTagsInAndCursorAndPageable(Set<String> tagsName, String nextPageToken, int cursor) throws UnsupportedEncodingException;
 }
