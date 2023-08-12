@@ -144,45 +144,51 @@ public class QuestionServiceImp implements IQuestionService {
         return questionEnity;
     }
 
-    private QuestionData updateQuestion(Question questionExisted, QuestionRequest questionRequest) {
-        if(questionRequest != null){
-            questionExisted.setTitle(questionRequest.getTitle());
-            questionExisted.setContent(questionRequest.getContent());
-            questionExisted.setCategory(questionRequest.getCategory());
-        }
+    private Question updateQuestion(Question questionExisted, QuestionRequest questionRequest) {
+        questionExisted.getTags().clear();
+        questionExisted = iQuestionMapper.toEntity(questionExisted, questionRequest);
 
         questionExisted.setUpdatedTime(LocalDateTime.now());
         questionExisted = questionJpaRepository.save(questionExisted);
-        iDataSyncService.syncDataToElasticsearch(questionExisted);
 
-        return modelMapper.map(questionExisted, QuestionData.class);
+        return questionExisted;
     }
 
     @Override
     @Transactional
     public QuestionData update(Long id, QuestionRequest questionRequest) {
         Question questionExisted = getById(id);
-        return updateQuestion(questionExisted, questionRequest);
+
+        questionExisted = updateQuestion(questionExisted, questionRequest);
+        iDataSyncService.syncDataToElasticsearch(questionExisted);
+
+        return iQuestionMapper.toData(questionExisted);
     }
 
     @Override
     @Transactional
-    public QuestionData updateVote(Long id) {
+    public QuestionData updateVote(Long id, QuestionRequest questionRequest) {
         Question questionExisted = getById(id);
         Long vote = questionExisted.getVote();
 
         questionExisted.setVote(++vote);
-        return updateQuestion(questionExisted, null);
+        questionExisted = updateQuestion(questionExisted, questionRequest);
+        iDataSyncService.syncDataToElasticsearch(questionExisted);
+
+        return iQuestionMapper.toData(questionExisted);
     }
 
     @Override
     @Transactional
-    public QuestionData updateView(Long id) {
+    public QuestionData updateView(Long id, QuestionRequest questionRequest) {
         Question questionExisted = getById(id);
         Long view = questionExisted.getView();
 
         questionExisted.setView(++view);
-        return updateQuestion(questionExisted, null);
+        questionExisted = updateQuestion(questionExisted, questionRequest);
+        iDataSyncService.syncDataToElasticsearch(questionExisted);
+
+        return iQuestionMapper.toData(questionExisted);
     }
 
     @Override
@@ -207,7 +213,7 @@ public class QuestionServiceImp implements IQuestionService {
     }
 
     private List<QuestionData> getByTagsInAndPageable(Set<String> tagsName, Pageable pageable) {
-        List<QuestionDoc> questionsDoc = questionEsRepository.findByTagsIn(tagsName, pageable);
+        List<QuestionDoc> questionsDoc = questionEsRepository.findByTagsInAndEnabledIsTrue(tagsName, pageable);
 
         if(questionsDoc == null)
             throw new QuestionsDataNotFoundException(UNABLED_GET_LIST_QUESTION);
