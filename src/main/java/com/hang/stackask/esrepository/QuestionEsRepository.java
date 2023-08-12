@@ -17,8 +17,8 @@ public interface QuestionEsRepository extends CrudRepository<QuestionDoc, Long> 
     @Query("{ \"bool\": { \"must\": [ { \"bool\": { \"should\": [ { \"match\": { \"title\": \"?0\" } }, { \"match\": { \"content\": \"?0\" } } ] } }, { \"term\": { \"enabled\": true } }, { \"range\": { \"id\": { \"lt\": ?1 } } } ] } } ")
     List<QuestionDoc> findByKeywordWithPagination(String keyword, int cursor, Pageable pageable);
 
-    List<QuestionDoc> findByTagsIn(Set<String> tagsName, Pageable pageable);
+    List<QuestionDoc> findByTagsInAndEnabledIsTrue(Set<String> tagsName, Pageable pageable);
 
-    @Query("{\"bool\": {\"filter\": {\"terms\": {\"tags\": ?0 }}, \"must\": [{\"range\": {\"id\": {\"lt\": ?1 }}}]}}")
+    @Query("{\"bool\": {\"filter\": {\"bool\": {\"must\": [{\"terms\": {\"tags\": ?0 }}], \"must_not\": {\"term\": {\"enabled\": false }}}}, \"must\": [{\"range\": {\"id\": {\"lt\": ?1 }}}]}}")
     List<QuestionDoc> findByTagsInAndCursorAndPageable(Set<String> tagsName, int cursor, Pageable pageable);
 }
