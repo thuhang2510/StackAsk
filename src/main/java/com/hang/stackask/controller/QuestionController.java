@@ -91,6 +91,7 @@ public class QuestionController {
 
     @PutMapping("/{id}/view")
     public ResponseEntity<QuestionResponse> updateView(@PathVariable("id") Long questionId,
+                                                       @RequestBody QuestionRequest questionRequest,
                                                        @RequestHeader("Authorization") String authHeader){
 
         Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
@@ -98,14 +99,15 @@ public class QuestionController {
         if (userId == null)
             throw new NotLoggedInException(NOT_LOGGED_IN);
 
-        QuestionData questionData = iQuestionService.updateView(questionId);
+        QuestionData questionData = iQuestionService.updateView(questionId, questionRequest);
         QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
 
         return new ResponseEntity<>(questionResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/vote")
+    @PutMapping("/{id}/vote-up")
     public ResponseEntity<QuestionResponse> updateVote(@PathVariable("id") Long questionId,
+                                                       @RequestBody QuestionRequest questionRequest,
                                                        @RequestHeader("Authorization") String authHeader){
 
         Long userId = jwtFilterUtil.getDataFromJwt(authHeader);
@@ -113,7 +115,7 @@ public class QuestionController {
         if (userId == null)
             throw new NotLoggedInException(NOT_LOGGED_IN);
 
-        QuestionData questionData = iQuestionService.updateVote(questionId);
+        QuestionData questionData = iQuestionService.updateVote(questionId, questionRequest);
         QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
 
         return new ResponseEntity<>(questionResponse, HttpStatus.OK);
