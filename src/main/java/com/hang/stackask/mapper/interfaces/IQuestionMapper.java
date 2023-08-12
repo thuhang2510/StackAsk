@@ -12,4 +12,5 @@ public interface IQuestionMapper {
     QuestionData toData(Question question);
     List<QuestionData> toDatas(List<Question> questions);
     QuestionDoc toDocument(Question question);
+    Question toEntity(Question questionExist, QuestionRequest questionRequest);
 }
