@@ -2,7 +2,9 @@ package com.hang.stackask.data;
 
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -20,5 +22,7 @@ public class QuestionData {
     private Long vote;
     private Long view;
     private Long userId;
+
+    @Builder.Default
     private Set<String> tags = new HashSet<>();
 }
