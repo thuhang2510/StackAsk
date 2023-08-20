@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
+    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.answers a WHERE q.uuid = :uuid AND (a.id IS NULL OR a.enabled = true)")
     Question getByUuidAndEnabledIsTrue(String uuid);
 
     @Query("select e from Question e order by e.id desc")

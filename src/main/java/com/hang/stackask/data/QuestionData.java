@@ -1,6 +1,9 @@
 package com.hang.stackask.data;
 
+import com.hang.stackask.entity.Answer;
 import lombok.*;
+
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,4 +25,6 @@ public class QuestionData {
 
     @Builder.Default
     private Set<String> tags = new HashSet<>();
+
+    private Collection<Answer> answers;
 }

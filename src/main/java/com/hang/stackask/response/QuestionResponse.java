@@ -1,7 +1,9 @@
 package com.hang.stackask.response;
 
+import com.hang.stackask.entity.Answer;
 import lombok.*;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,4 +24,6 @@ public class QuestionResponse {
 
     @Builder.Default
     private Set<String> tags = new HashSet<>();
+
+    private Collection<Answer> answers;
 }

@@ -83,9 +83,11 @@ public class QuestionMapperImpl implements IQuestionMapper {
                 .view(question.getView())
                 .build();
 
-        questionData.setTags(question.getTags().stream()
-                .map(Tag::getName)
-                .collect(Collectors.toSet()));
+        if(question.getTags().size() > 0){
+            questionData.setTags(question.getTags().stream()
+                    .map(Tag::getName)
+                    .collect(Collectors.toSet()));
+        }
 
         return questionData;
     }
@@ -108,9 +110,11 @@ public class QuestionMapperImpl implements IQuestionMapper {
         if(question.getUpdatedTime() != null)
             questionDoc.setUpdatedTime(converter.convertLocalDateTimeToLong(question.getUpdatedTime()));
 
-        questionDoc.setTags(question.getTags().stream()
-                .map(Tag::getName)
-                .collect(Collectors.toSet()));
+        if(question.getTags().size() > 0) {
+            questionDoc.setTags(question.getTags().stream()
+                    .map(Tag::getName)
+                    .collect(Collectors.toSet()));
+        }
 
         return questionDoc;
     }

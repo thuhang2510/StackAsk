@@ -78,3 +78,6 @@ CREATE TABLE IF NOT EXISTS `tbl_question_tag`(
 	`tag_id` BIGINT NOT NULL,
 	PRIMARY KEY(`question_id`, `tag_id`)
 ) ENGINE=InnoDB;
+
+ALTER TABLE `tbl_answer`
+ADD COLUMN `uuid` VARCHAR(70) NOT NULL;

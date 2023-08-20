@@ -1,9 +1,11 @@
 package com.hang.stackask.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Collection;
 import java.util.Set;
 
 @Entity
@@ -39,6 +41,12 @@ public class Question extends CommonEntity{
     @JoinTable(name = "tbl_question_tag", joinColumns = { @JoinColumn(name = "question_id") }, inverseJoinColumns = {
             @JoinColumn(name = "tag_id") })
     private Set<Tag> tags;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Collection<Answer> answers;
 
     public void addTag(Tag tag) {
         this.tags.add(tag);

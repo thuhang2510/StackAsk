@@ -21,6 +21,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class, RuntimeException.class})
     public ResponseEntity<String> handleRequestParamException(Exception e) {
         LOGGER.info("invalid argument: {}", e.getMessage());
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 

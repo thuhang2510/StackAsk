@@ -1,14 +1,11 @@
 package com.hang.stackask.service.implement;
 
 import com.hang.stackask.data.MediaData;
-import com.hang.stackask.data.QuestionData;
-import com.hang.stackask.data.UserData;
 import com.hang.stackask.entity.Media;
-import com.hang.stackask.entity.User;
 import com.hang.stackask.exception.MediaNotFoundException;
 import com.hang.stackask.exception.NotSavedException;
 import com.hang.stackask.repository.MediaRepository;
-import com.hang.stackask.response.UserResponse;
+import com.hang.stackask.service.interfaces.IAnswerService;
 import com.hang.stackask.service.interfaces.IMediaService;
 import com.hang.stackask.service.interfaces.IQuestionService;
 import com.hang.stackask.service.interfaces.IUserService;
@@ -37,6 +34,9 @@ public class MediaServiceImp implements IMediaService {
     private IQuestionService iQuestionService;
 
     @Autowired
+    private IAnswerService iAnswerService;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Value("${upload.dir}")
@@ -48,6 +48,8 @@ public class MediaServiceImp implements IMediaService {
 
         if(parent_uuid.charAt(0) == 'Q')
             iQuestionService.getByUuid(parent_uuid);
+        else
+            iAnswerService.getByUuid(parent_uuid);
 
         String uuid = UUID.randomUUID().toString();
         String fileName = CustomFileNameUtil.changeFileName(

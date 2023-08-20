@@ -60,6 +60,14 @@ public class QuestionController {
         return new ResponseEntity<>(pageResponse, HttpStatus.OK);
     }
 
+    @GetMapping("/{uuid}")
+    public ResponseEntity<QuestionResponse> getByUuid(@PathVariable("uuid") String uuid){
+        QuestionData questionData = iQuestionService.getByUuid(uuid);
+        QuestionResponse questionResponse = modelMapper.map(questionData, QuestionResponse.class);
+
+        return new ResponseEntity<>(questionResponse, HttpStatus.OK);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<PageResponse<List<QuestionResponse>>> getByKeyword(
             @RequestParam("keyword") String keyword,
