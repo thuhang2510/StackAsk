@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `tbl_replyanswer` (
     `content` NVARCHAR(255) NULL,
     `vote` BIGINT DEFAULT 0,
     `user_id` BIGINT,
-    `ansewer_id` BIGINT,
+    `answer_id` BIGINT,
     `enabled` BIT DEFAULT 1,
     `created_time` datetime DEFAULT NULL,
     `updated_time` datetime DEFAULT NULL,
