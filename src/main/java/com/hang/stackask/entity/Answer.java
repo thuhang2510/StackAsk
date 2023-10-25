@@ -1,9 +1,12 @@
 package com.hang.stackask.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.util.Collection;
 
 @Entity
 @Data
@@ -34,4 +37,10 @@ public class Answer extends CommonEntity{
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Question question;
+
+    @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Collection<ReplyAnswer> replyAnswers;
 }
